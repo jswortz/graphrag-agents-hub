@@ -16,6 +16,14 @@ NEO4J_PASS = os.getenv("NEO4J_PASS", "password")
 # Initialize Vertex AI Embeddings
 embeddings_service = VertexAIEmbeddings(model_name="text-embedding-004")
 
+def format_vector_for_display(vector):
+    # Format the vector to show only the first 9 elements (numbers) followed by an ellipsis
+    if len(vector) > 9:
+        formatted = ", ".join([str(round(x, 6)) for x in vector[:9]])
+        return f"[{formatted}, ...]"
+    return str(vector)
+
+
 class LiveSpannerAgent:
     def __init__(self):
         self.name = "Spanner Products Agent"
@@ -27,10 +35,14 @@ class LiveSpannerAgent:
         
         # 2. Construct GQL with ML.DISTANCE for Semantic Search
         graph_query = f"""
+        /* 1. Generate text-embedding-004 vector from user prompt */
+        // query_vector = VertexAIEmbeddings(model_name="text-embedding-004").embed_query("{query}")
+        
+        /* 2. Execute Spanner GQL Vector Search */
         GRAPH ProductsGraph
         MATCH (p:Product)-[:BELONGS_TO]->(c:Category)
-        WHERE ML.DISTANCE(p.embedding, {query_vector}, 'COSINE') < 0.5
-        RETURN p.name, c.name, ML.DISTANCE(p.embedding, {query_vector}, 'COSINE') as score
+        WHERE ML.DISTANCE(p.embedding, {format_vector_for_display(query_vector)}, 'COSINE') < 0.5
+        RETURN p.name, c.name, ML.DISTANCE(p.embedding, {format_vector_for_display(query_vector)}, 'COSINE') as score
         ORDER BY score ASC
         LIMIT 5
         """
@@ -73,12 +85,16 @@ class LiveBigQueryAgent:
         # This demonstrates finding a seed customer via vector similarity, 
         # then traversing their transfer network.
         graph_query = f"""
+        /* 1. Generate text-embedding-004 vector from user prompt */
+        // query_vector = VertexAIEmbeddings(model_name="text-embedding-004").embed_query("{query}")
+        
+        /* 2. Execute BigQuery VECTOR_SEARCH + GRAPH_TABLE Traversal */
         WITH seed_customers AS (
           SELECT customer_id 
           FROM VECTOR_SEARCH(
             TABLE `{PROJECT_ID}.{BQ_DATASET}.Customers`, 
             'embedding', 
-            (SELECT {query_vector}), 
+            (SELECT {format_vector_for_display(query_vector)}), 
             top_k => 1
           )
         )
@@ -118,7 +134,11 @@ class LiveNeo4jAgent:
         
         # 2. Use Neo4j Vector Index to find a seed Influencer, then traverse to Brands
         graph_query = f"""
-        CALL db.index.vector.queryNodes('influencer_embeddings', 3, {query_vector}) 
+        // 1. Generate text-embedding-004 vector from user prompt
+        // query_vector = VertexAIEmbeddings(model_name="text-embedding-004").embed_query("{query}")
+        
+        // 2. Execute Cypher Vector Search & Traversal
+        CALL db.index.vector.queryNodes('influencer_embeddings', 3, {format_vector_for_display(query_vector)}) 
         YIELD node AS i, score
         MATCH (i)-[:ENDORSES]->(b:Brand)
         RETURN i.name as influencer, b.name as brand, score
