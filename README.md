@@ -31,12 +31,12 @@ This project implements a two-stage retrieval strategy to maximize relevance and
 | **FSI & Risk** | <font color="#22c55e">BigQuery</font> | **Green** | SQL + Property Graph | `VECTOR_SEARCH` |
 | **Marketing** | <font color="#f97316">Neo4j</font> | **Orange** | Cypher | Neo4j Vector Index |
 
-## 🏗️ Architecture Stack
+## ⚡ Quick Start (One-Liner)
 
-- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS + Framer Motion.
-- **Backend:** FastAPI (Python 3.13+) + LangChain + Vertex AI Orchestrator.
-- **Databases:** Google Cloud Spanner (Graph), BigQuery (Property Graph), Neo4j.
-- **Orchestration:** Custom routing logic in `agent_orchestrator.py` leveraging Vertex AI.
+Run this command to install dependencies, build the frontend, and deploy to Cloud Run automatically:
+```bash
+uv sync && cd frontend && npm install && npm run build && cd .. && ./deploy.sh
+```
 
 ## 💻 Running Locally
 
