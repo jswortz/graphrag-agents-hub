@@ -1,0 +1,6 @@
+The GraphRAG Multi-Agent Hub is a containerized system deployed on Google Cloud Run. It acts as a central orchestrator leveraging Vertex AI (text-embedding-004) to route natural language queries. 
+- The Orchestrator intercepts the request and determines the domain (E-Commerce, FSI, or Marketing).
+- For E-Commerce, it generates GQL and queries Google Cloud Spanner (Graph).
+- For FSI & Risk, it generates SQL + Graph and queries BigQuery (Property Graph).
+- For Marketing, it generates Cypher and queries Neo4j.
+- The system integrates native vector search (ML.DISTANCE/VECTOR_SEARCH) within the graph traversals to perform semantic retrieval.

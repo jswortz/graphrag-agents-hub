@@ -20,6 +20,7 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [activeNode, setActiveNode] = useState(null);
+  const [lastQuery, setLastQuery] = useState("");
   const [readme, setReadme] = useState("Loading README...");
   
   const endOfMessagesRef = useRef<any>(null);
@@ -40,6 +41,7 @@ function App() {
   const runQuery = async (query: string) => {
     if (!query.trim()) return;
     setMessages(prev => [...prev, { role: "user", content: query }]);
+    setLastQuery(query);
     setInputValue("");
     setIsThinking(true);
     setActiveNode(null);
@@ -222,7 +224,7 @@ function App() {
                 </div>
                 
                 <div className="flex-1 w-full flex justify-center overflow-x-auto no-scrollbar">
-                    <ArchitectureDiagram activeNode={activeNode} isThinking={isThinking} />
+                    <ArchitectureDiagram activeNode={activeNode} isThinking={isThinking} lastQuery={lastQuery} />
                 </div>
               </div>
 

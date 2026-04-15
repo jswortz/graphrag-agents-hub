@@ -13,15 +13,23 @@ The project is built on a **Supervisor-Worker** pattern. A central orchestrator 
 4.  **Vector Integration:** Inject vector search parameters into the graph query for a hybrid semantic-structural retrieval.
 5.  **Synthesis:** Combine graph results into a natural language response.
 
-## 🧠 GraphRAG Methodology
+## 🧠 GraphRAG Methodology: The Two-Stage Retrieval
 
-### Embeddings vs. Traversal
-| Feature | Embeddings (Semantic) | Traversal (Structural) |
-| :--- | :--- | :--- |
-| **Focus** | Conceptual similarity | Relationship topology |
-| **Query Type** | Vector Distance (Cosine/Euclidean) | Multi-hop Pathfinding (MATCH) |
-| **Strength** | Handles vague or fuzzy queries | Finds hidden connections and clusters |
-| **Tooling** | Vertex AI `text-embedding-004` | Spanner GQL, BQ Graph, Neo4j Cypher |
+This project implements a high-fidelity GraphRAG pipeline that bridges the gap between unstructured semantic search and structured relational logic.
+
+### Stage 1: Semantic "Seed" Discovery (Embeddings)
+- **Role:** Entry Point Identification.
+- **Mechanism:** 
+    - The Natural Language query is converted into a high-dimensional vector using **Vertex AI (text-embedding-004)**.
+    - **Vector Search:** We use native database vector operations (`ML.DISTANCE` in Spanner, `VECTOR_SEARCH` in BigQuery) to find the most relevant nodes.
+    - **Outcome:** This provides the "seeds"—the nodes in the graph that are conceptually closest to the user's intent, even if the exact keywords don't match.
+
+### Stage 2: Structural Network Traversal (GQL/SQL/Cypher)
+- **Role:** Context Expansion & Relationship Discovery.
+- **Mechanism:**
+    - From the seed nodes identified in Stage 1, the system executes **Multi-hop Graph Queries**.
+    - It traverses defined edges (e.g., `BELONGS_TO`, `TRANSFERS_TO`, `RUNS_CAMPAIGN`) to gather related entities, metadata, and structural context.
+    - **Outcome:** A rich, graph-augmented context that includes not just the matching items, but their operational and relational environment.
 
 ## 📊 Domain-Database Mapping
 

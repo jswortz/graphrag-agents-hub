@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ArrowRight, Database, Search, Cpu, Share2 } from 'lucide-react';
 
-const Node = ({ title, color, active, x, y }: any) => {
+const Node = ({ title, color, active, x, y, icon: Icon }: any) => {
   return (
     <motion.div
-      className={`absolute w-36 h-20 rounded-xl flex items-center justify-center text-[13px] leading-tight font-bold text-center border-4 shadow-xl z-20 transition-colors duration-300 ${
+      className={`absolute w-36 h-20 rounded-xl flex flex-col items-center justify-center text-[13px] leading-tight font-bold text-center border-4 shadow-xl z-20 transition-colors duration-300 ${
         active ? color + " text-white border-white scale-110 shadow-2xl z-30" : "bg-slate-800 text-slate-300 border-slate-600"
       }`}
       style={{ left: x, top: y }}
@@ -15,6 +15,7 @@ const Node = ({ title, color, active, x, y }: any) => {
       }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
+      {Icon && <Icon className={`w-4 h-4 mb-1 ${active ? "text-white" : "text-slate-500"}`} />}
       <div className="whitespace-pre-wrap">{title}</div>
     </motion.div>
   );
@@ -52,28 +53,46 @@ const Connection = ({ from, to, active, color }: any) => {
   );
 };
 
-export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
+export default function ArchitectureDiagram({ activeNode, isThinking, lastQuery }: any) {
   const nodes = {
-    vertex: { x: 230, y: 30, title: "Cloud Run +\nVertex AI", color: "bg-purple-600", pathColor: "bg-purple-500" },
-    spanner: { x: 30, y: 220, title: "Spanner Graph\n(Products)", color: "bg-blue-500", pathColor: "bg-blue-500" },
-    neo4j: { x: 230, y: 280, title: "Neo4j\n(Brands)", color: "bg-orange-500", pathColor: "bg-orange-500" },
-    bigquery: { x: 430, y: 220, title: "BigQuery Property Graph\n(Customers)", color: "bg-green-500", pathColor: "bg-green-500" }
+    vertex: { x: 230, y: 30, title: "Cloud Run +\nVertex AI", color: "bg-purple-600", pathColor: "bg-purple-500", icon: Cpu },
+    spanner: { x: 30, y: 220, title: "Spanner Graph\n(Products)", color: "bg-blue-500", pathColor: "bg-blue-500", icon: Database },
+    neo4j: { x: 230, y: 280, title: "Neo4j\n(Brands)", color: "bg-orange-500", pathColor: "bg-orange-500", icon: Share2 },
+    bigquery: { x: 430, y: 220, title: "BigQuery Property Graph\n(Customers)", color: "bg-green-500", pathColor: "bg-green-500", icon: Search }
   };
   
   const getCenter = (nodeProps: any) => ({ x: nodeProps.x + 72, y: nodeProps.y + 40 });
 
-  const getCodeSnippet = () => {
+  const patternDetails = useMemo(() => {
     if (activeNode === 'spanner') {
-      return `/* Spanner GQL Pattern */\nGRAPH ProductsGraph\nMATCH (p:Product)-[:BELONGS_TO]->(c:Category)\n/* Using Vertex Embeddings for vector distance */\nWHERE p.description LIKE '%query%'\nRETURN p.name, c.name\n\n// Backend: google-cloud-spanner`;
+      return {
+        title: "E-Commerce Pattern (Spanner GQL)",
+        input: lastQuery || "Find similar products...",
+        process: "text-embedding-004 ➔ ML.DISTANCE ➔ Graph Join",
+        output: "Product + Category Tuples",
+        code: `GRAPH ProductsGraph\nMATCH (p:Product)-[:BELONGS_TO]->(c:Category)\nWHERE p.description LIKE '%...%'\nRETURN p.name, c.name`
+      };
     }
     if (activeNode === 'bigquery') {
-      return `/* BigQuery Native Property Graph */\nSELECT * FROM GRAPH_TABLE(\n  \`project.dataset.CustomerGraph\`\n  MATCH (a1:Accounts)-[t:TransfersTo]->(a2:Accounts)\n  COLUMNS (a1.id, a2.id, t.amount)\n)\n\n// Backend: google-cloud-bigquery`;
+      return {
+        title: "FSI Pattern (BigQuery Graph)",
+        input: lastQuery || "Show customer network...",
+        process: "Native BQ Vector Search ➔ GRAPH_TABLE Traversal",
+        output: "Transaction Network Nodes",
+        code: `SELECT * FROM GRAPH_TABLE(\n  CustomerGraph\n  MATCH (a1:Accounts)-[t:TransfersTo]->(a2:Accounts)\n  COLUMNS (a1.id, a2.id, t.amount)\n)`
+      };
     }
     if (activeNode === 'neo4j') {
-      return `/* Neo4j Cypher Pattern */\nMATCH (b:Brand)-[:RUNS]->(c:Campaign)-[:FEATURES]->(i:Influencer)\nWHERE b.name = $brand\nRETURN c.name, i.name\n\n// Backend: neo4j python driver`;
+      return {
+        title: "Marketing Pattern (Neo4j Cypher)",
+        input: lastQuery || "Campaigns for brand...",
+        process: "Entity Extraction ➔ Cypher MATCH ➔ Multi-hop Join",
+        output: "Brand-Influencer Relationship Path",
+        code: `MATCH (b:Brand)-[:RUNS]->(c:Campaign)-[:FEATURES]->(i:Influencer)\nWHERE b.name = $brand\nRETURN c.name, i.name`
+      };
     }
-    return `/* Cloud Run + Vertex AI Agent */\n1. Receive NL Intent via Cloud Run API\n2. Extract Entity & Intent via Vertex\n3. Determine optimal Graph Database Route\n4. Synthesize underlying Graph Query Language (GQL / Cypher / SQL)\n5. Return natural response generated from Graph tuples`;
-  };
+    return null;
+  }, [activeNode, lastQuery]);
 
   const getConsoleLink = () => {
     if (activeNode === 'spanner') return "https://console.cloud.google.com/spanner/instances";
@@ -108,11 +127,11 @@ export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: -10 }}
-           className={`w-full max-w-lg p-5 rounded-xl border font-mono text-sm shadow-inner transition-colors duration-500 relative ${getStyleClass()}`}
+           className={`w-full max-w-2xl p-6 rounded-xl border font-mono text-sm shadow-inner transition-colors duration-500 relative ${getStyleClass()}`}
         >
-           <div className="flex justify-between items-center mb-3 pb-2 border-b border-white/20">
+           <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/20">
               <h3 className="font-bold uppercase tracking-wider text-xs">
-                 {activeNode ? `${activeNode} Execution Pattern` : 'Orchestration Pattern'}
+                 {patternDetails ? patternDetails.title : 'Orchestration Pattern'}
               </h3>
               {getConsoleLink() && (
                 <a 
@@ -125,7 +144,27 @@ export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
                 </a>
               )}
            </div>
-           <pre className="whitespace-pre-wrap">{getCodeSnippet()}</pre>
+           
+           {patternDetails ? (
+             <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                   <div className="text-[10px] text-white/40 uppercase mb-1">Input (NL Query)</div>
+                   <div className="text-xs italic truncate">"{patternDetails.input}"</div>
+                </div>
+                <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                   <div className="text-[10px] text-white/40 uppercase mb-1">Execution Pipeline</div>
+                   <div className="text-xs">{patternDetails.process}</div>
+                </div>
+                <div className="bg-black/20 p-3 rounded-lg border border-white/5 col-span-2">
+                   <div className="text-[10px] text-white/40 uppercase mb-1">Output (Graph Tuples)</div>
+                   <div className="text-xs">{patternDetails.output}</div>
+                </div>
+             </div>
+           ) : null}
+
+           <pre className="whitespace-pre-wrap text-[11px] leading-relaxed bg-black/40 p-4 rounded-lg border border-white/5">
+             {patternDetails ? patternDetails.code : `/* Cloud Run + Vertex AI Agent */\n1. Receive NL Intent via Cloud Run API\n2. Extract Entity & Intent via Vertex\n3. Determine optimal Graph Database Route\n4. Synthesize underlying Graph Query Language\n5. Return natural response generated from Graph tuples`}
+           </pre>
         </motion.div>
       </AnimatePresence>
     </div>
