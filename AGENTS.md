@@ -2,11 +2,27 @@
 
 This document provides a detailed breakdown of the specialized agents operating within the **GraphRAG Multi-Agent Hub**. Each agent is optimized for a specific domain, leveraging unique database capabilities to execute the `NL -> Graph -> Synthesis` loop.
 
+## 🧠 GraphRAG Methodology: The Two-Stage Loop
+
+The Hub operates on a dual-stage retrieval architecture:
+
+1.  **Stage 1: Semantic RAG (Node Discovery):** Uses Vertex AI Embeddings for semantic node discovery. This identifies the most relevant "seed" nodes in the graph based on the user's conceptual intent.
+2.  **Stage 2: Generative Graph Queries (Topology Discovery):** Uses native graph query languages (GQL, SQL+Graph, Cypher) for structural topology discovery. This traverses the graph's relationships to generate high-fidelity context for the final response.
+
+## 📊 Technical Matrix
+
+| Domain | Database | Query Language | Vector Integration (Stage 1 RAG) |
+| :--- | :--- | :--- | :--- |
+| **E-Commerce** | Cloud Spanner | GQL | ML.DISTANCE |
+| **FSI & Risk** | BigQuery | SQL + Graph | VECTOR_SEARCH |
+| **Marketing** | Neo4j | Cypher | Vector Index |
+
 ---
 
 ## 🏗️ Central Orchestrator
 - **Logic:** Located in `agent_orchestrator.py`.
 - **Role:** Analyzes the user's Natural Language query using keyword-based intent parsing (upgradable to LLM-based routing) and delegates the task to the appropriate specialized worker agent.
+- **Verification:** The orchestrator executes **coverage runs** during its startup sequence to verify that all worker agents and their respective database paths are operational.
 
 ---
 

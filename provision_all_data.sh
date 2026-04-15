@@ -17,3 +17,13 @@ echo "\n--- 3. Provisioning Neo4j Graph ---"
 uv run python deployment_scripts/provision_neo4j.py
 
 echo "\n✅ All persistent datastores fully populated via live connections!"
+
+echo "\n--- 4. Executing GraphRAG Coverage Runs ---"
+uv run python test_queries.py
+
+if [ $? -eq 0 ]; then
+    echo "\n🏆 PROVISIONING & COVERAGE SUCCESSFUL!"
+else
+    echo "\n💥 CRITICAL: Coverage Failure detected during startup."
+    exit 1
+fi

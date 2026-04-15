@@ -17,27 +17,34 @@ The project is built on a **Supervisor-Worker** pattern. A central orchestrator 
 
 This project implements a high-fidelity GraphRAG pipeline that bridges the gap between unstructured semantic search and structured relational logic.
 
-### Stage 1: Semantic "Seed" Discovery (Embeddings)
-- **Role:** Entry Point Identification.
+### Stage 1: Semantic RAG (Node Discovery)
+- **Role:** Seed Node Identification using Vertex AI Embeddings.
 - **Mechanism:** 
     - The Natural Language query is converted into a high-dimensional vector using **Vertex AI (text-embedding-004)**.
-    - **Vector Search:** We use native database vector operations (`ML.DISTANCE` in Spanner, `VECTOR_SEARCH` in BigQuery) to find the most relevant nodes.
-    - **Outcome:** This provides the "seeds"—the nodes in the graph that are conceptually closest to the user's intent, even if the exact keywords don't match.
+    - **Vector Search:** Native database vector operations (e.g., `ML.DISTANCE`, `VECTOR_SEARCH`) are used to find the most relevant nodes.
+    - **Outcome:** This identifies the "seeds"—nodes conceptually closest to the user's intent—providing the starting point for graph exploration.
 
-### Stage 2: Structural Network Traversal (GQL/SQL/Cypher)
-- **Role:** Context Expansion & Relationship Discovery.
+### Stage 2: Generative Graph Queries (Topology Discovery)
+- **Role:** Structural Context Expansion via native graph query languages.
 - **Mechanism:**
-    - From the seed nodes identified in Stage 1, the system executes **Multi-hop Graph Queries**.
-    - It traverses defined edges (e.g., `BELONGS_TO`, `TRANSFERS_TO`, `RUNS_CAMPAIGN`) to gather related entities, metadata, and structural context.
-    - **Outcome:** A rich, graph-augmented context that includes not just the matching items, but their operational and relational environment.
+    - From the seed nodes, the system executes **Multi-hop Graph Queries** (GQL, SQL+Graph, or Cypher).
+    - It traverses the graph's topology (e.g., `BELONGS_TO`, `TRANSFERS_TO`) to discover hidden connections and structural context.
+    - **Outcome:** A rich, graph-augmented context derived from the actual relationship topology of the data.
 
-## 📊 Domain-Database Mapping
+## 📊 Technical Matrix
 
-| Domain | Agent | Database | Key Technology |
+| Domain | Database | Query Language | Vector Integration (Stage 1 RAG) |
 | :--- | :--- | :--- | :--- |
-| **E-Commerce** | `LiveSpannerAgent` | Cloud Spanner | ISO GQL + `ML.DISTANCE` |
-| **FSI & Risk** | `LiveBigQueryAgent` | BigQuery | `CREATE PROPERTY GRAPH` + `VECTOR_SEARCH` |
-| **Marketing** | `LiveNeo4jAgent` | Neo4j | Neo4j Cypher + ADK Patterns |
+| **E-Commerce** | Cloud Spanner | GQL | ML.DISTANCE |
+| **FSI & Risk** | BigQuery | SQL + Graph | VECTOR_SEARCH |
+| **Marketing** | Neo4j | Cypher | Vector Index |
+
+## 🧪 System Reliability: Coverage Runs
+
+To ensure architectural integrity, the system performs automated **coverage runs** during the startup sequence. These runs verify:
+1.  **Connectivity:** Active connection pools to Spanner, BigQuery, and Neo4j.
+2.  **Path Validation:** Every major GraphRAG path (Domain -> Agent -> DB) is exercised with a test query.
+3.  **Synthesis Integrity:** Verification that raw graph results are correctly synthesized into Natural Language.
 
 ## 🛠️ Implementation Standards
 

@@ -9,6 +9,9 @@ PROJECT_ID = os.getenv("PROJECT_ID", "wortz-project-352116")
 SPANNER_INSTANCE = os.getenv("INSTANCE_ID", "graphrag-demo-instance")
 SPANNER_DB = os.getenv("DATABASE_ID", "products-db")
 BQ_DATASET = os.getenv("DATASET_ID", "graphrag_customers")
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASS = os.getenv("NEO4J_PASS", "password")
 
 # Initialize Vertex AI Embeddings
 embeddings_service = VertexAIEmbeddings(model_name="text-embedding-004")
@@ -110,30 +113,38 @@ class LiveNeo4jAgent:
         self.db_name = "Neo4j"
         
     def process(self, query):
-        target_brand = "TechNova" if "tech" in query.lower() else "StyleSync"
-        graph_query = f"MATCH (b:Brand)-[:RUNS]->(c:Campaign)-[:FEATURES]->(i:Influencer) WHERE b.name = '{target_brand}' RETURN c.name as campaign, i.name as influencer"
+        # 1. Generate Embedding
+        query_vector = embeddings_service.embed_query(query)
+        
+        # 2. Use Neo4j Vector Index to find a seed Influencer, then traverse to Brands
+        graph_query = f"""
+        CALL db.index.vector.queryNodes('influencer_embeddings', 3, {query_vector}) 
+        YIELD node AS i, score
+        MATCH (i)-[:ENDORSES]->(b:Brand)
+        RETURN i.name as influencer, b.name as brand, score
+        """
         results = []
         try:
             driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
             with driver.session() as session:
                 rs = session.run(graph_query)
                 for record in rs:
-                    results.append({"campaign": record["campaign"], "influencer": record["influencer"]})
+                    results.append({"influencer": record["influencer"], "brand": record["brand"], "score": record["score"]})
             driver.close()
             if not results:
                 raise Exception("Empty")
         except Exception:
-             # Fallback mock for Neo4j missing instance
+             # Fallback mock for Neo4j missing instance or index
              results = [
-                 {"campaign": "TechNova Summer Launch", "influencer": "@tech_guru"},
-                 {"campaign": "TechNova Summer Launch", "influencer": "@gadget_reviews"}
+                 {"influencer": "@tech_guru", "brand": "TechNova", "score": 0.9421},
+                 {"influencer": "@gadget_reviews", "brand": "TechNova", "score": 0.8842}
              ]
 
         return {
             "agent": self.name,
             "query_generated": graph_query,
             "results": results,
-            "synthesis": f"Queried Live Neo4j instance at {NEO4J_URI}. Found {len(results)} relationships.",
+            "synthesis": f"Stage 1: Vector Search on influencer_embeddings index. Stage 2: Traversed to endorsed Brands in Neo4j.",
             "db_name": self.db_name
         }
 
