@@ -26,6 +26,14 @@ async def query_endpoint(req: QueryRequest):
     # Add a mock delay if you want to simulate thinking for animations on local testing
     return response
 
+@app.get("/api/readme")
+async def get_readme():
+    try:
+        with open("README.md", "r") as f:
+            return {"content": f.read()}
+    except Exception as e:
+        return {"content": f"Error loading README: {str(e)}"}
+
 # Serve Vite build
 # Make sure frontend/dist exists
 if os.path.exists("frontend/dist"):

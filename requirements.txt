@@ -6,3 +6,7 @@ neo4j
 langchain
 pydantic
 numpy
+networkx
+google-cloud-aiplatform
+langchain-google-vertexai
+pytest

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 
 const Node = ({ title, color, active, x, y }: any) => {
   return (
@@ -74,6 +75,13 @@ export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
     return `/* Cloud Run + Vertex AI Agent */\n1. Receive NL Intent via Cloud Run API\n2. Extract Entity & Intent via Vertex\n3. Determine optimal Graph Database Route\n4. Synthesize underlying Graph Query Language (GQL / Cypher / SQL)\n5. Return natural response generated from Graph tuples`;
   };
 
+  const getConsoleLink = () => {
+    if (activeNode === 'spanner') return "https://console.cloud.google.com/spanner/instances";
+    if (activeNode === 'bigquery') return "https://console.cloud.google.com/bigquery";
+    if (activeNode === 'neo4j') return "https://neo4j.com/product/neo4j-graph-database/";
+    return null;
+  };
+
   const getStyleClass = () => {
     if (activeNode === 'spanner') return 'border-blue-500/50 bg-blue-950/30 text-blue-200';
     if (activeNode === 'bigquery') return 'border-green-500/50 bg-green-950/30 text-green-200';
@@ -100,11 +108,23 @@ export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: -10 }}
-           className={`w-full max-w-lg p-5 rounded-xl border font-mono text-sm shadow-inner transition-colors duration-500 ${getStyleClass()}`}
+           className={`w-full max-w-lg p-5 rounded-xl border font-mono text-sm shadow-inner transition-colors duration-500 relative ${getStyleClass()}`}
         >
-           <h3 className="font-bold mb-3 pb-2 border-b border-white/20 uppercase tracking-wider text-xs">
-              {activeNode ? `${activeNode} Execution Pattern` : 'Orchestration Pattern'}
-           </h3>
+           <div className="flex justify-between items-center mb-3 pb-2 border-b border-white/20">
+              <h3 className="font-bold uppercase tracking-wider text-xs">
+                 {activeNode ? `${activeNode} Execution Pattern` : 'Orchestration Pattern'}
+              </h3>
+              {getConsoleLink() && (
+                <a 
+                  href={getConsoleLink()!} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" /> Console
+                </a>
+              )}
+           </div>
            <pre className="whitespace-pre-wrap">{getCodeSnippet()}</pre>
         </motion.div>
       </AnimatePresence>

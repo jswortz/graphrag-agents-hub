@@ -11,12 +11,10 @@ dependencies = [
     "google-cloud-spanner>=3.65.0",
     "langchain>=1.2.15",
     "langchain-google-vertexai>=3.2.2",
-    "matplotlib>=3.10.8",
     "neo4j>=6.1.0",
     "networkx>=3.6.1",
     "pydantic>=2.13.0",
     "pytest>=9.0.3",
-    "streamlit>=1.56.0",
     "uvicorn>=0.44.0",
 ]
 

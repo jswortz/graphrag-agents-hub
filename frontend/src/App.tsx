@@ -1,17 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ArchitectureDiagram from './ArchitectureDiagram';
-import { Send, Database, Sparkles, User, Box, ArrowRight } from 'lucide-react';
+import { 
+  Send, 
+  Database, 
+  Sparkles, 
+  User, 
+  Box, 
+  ArrowRight, 
+  MessageSquare, 
+  Layout, 
+  FileText, 
+  Info,
+  ExternalLink
+} from 'lucide-react';
 
 function App() {
+  const [activeTab, setActiveTab] = useState("chat");
   const [messages, setMessages] = useState<any[]>([{ role: "agent", content: "Welcome to the GraphRAG Multi-Agent Hub. Try a query below!", activeNode: null, meta: null }]);
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [activeNode, setActiveNode] = useState(null);
+  const [readme, setReadme] = useState("Loading README...");
   
   const endOfMessagesRef = useRef<any>(null);
+
   useEffect(() => {
-     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isThinking]);
+     if (activeTab === 'chat') {
+       endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+     }
+  }, [messages, isThinking, activeTab]);
+
+  useEffect(() => {
+    fetch("/api/readme")
+      .then(res => res.json())
+      .then(data => setReadme(data.content))
+      .catch(err => setReadme("Failed to load README.md: " + err));
+  }, []);
 
   const runQuery = async (query: string) => {
     if (!query.trim()) return;
@@ -19,6 +43,9 @@ function App() {
     setInputValue("");
     setIsThinking(true);
     setActiveNode(null);
+    
+    // Switch to chat tab if query is run from elsewhere (e.g. examples)
+    setActiveTab("chat");
 
     try {
       const res = await fetch("/api/query", {
@@ -72,149 +99,229 @@ function App() {
       return 'border-purple-500 bg-purple-500/10 text-purple-100';
   };
 
+  const TabButton = ({ id, label, icon: Icon }: { id: string, label: string, icon: any }) => (
+    <button 
+      onClick={() => setActiveTab(id)}
+      className={`flex items-center gap-2 px-6 py-3 font-bold transition-all border-b-2 whitespace-nowrap ${
+        activeTab === id 
+          ? 'border-purple-500 text-white bg-purple-500/10' 
+          : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{label.split(' ')[0]}</span>
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex p-6 gap-6 font-sans">
-      <div className="w-[45%] flex flex-col gap-4 border border-slate-800 bg-slate-900 rounded-2xl p-6 shadow-2xl">
-         <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-             <Database className="text-purple-500 w-8 h-8" />
-             <h1 className="text-xl font-bold text-white tracking-wide">GraphRAG Agent Interface</h1>
-         </div>
-         
-         <div className="flex-1 overflow-y-auto flex flex-col gap-4 py-4 pr-2">
-            {messages.map((msg, i) => (
-                <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                   <div className={`max-w-[85%] p-4 rounded-2xl border ${msg.role === 'user' ? 'bg-slate-800 border-slate-700 text-white rounded-br-none' : (msg.activeNode ? getColorClass(msg.activeNode) + ' rounded-bl-none' : 'bg-slate-800 border-slate-700 text-white rounded-bl-none')}`}>
-                      <p className="text-[15px] leading-relaxed">{msg.content}</p>
-                      
-                      {msg.meta && msg.meta.results && msg.meta.results.length > 0 && (
-                          <div className="mt-3 p-3 bg-black/30 rounded-lg text-sm">
-                             <strong className="block mb-2 text-white/90 border-b border-white/20 pb-1">Data Returned:</strong>
-                             <ul className="space-y-1">
-                               {msg.meta.results.map((r: any, idx: number) => (
-                                 <li key={idx} className="list-disc ml-4 opacity-90">
-                                   {JSON.stringify(r).replace(/"/g, '').replace(/\{|\}/g, '')}
-                                 </li>
-                               ))}
-                             </ul>
-                          </div>
-                      )}
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+      {/* Top Header & Navigation */}
+      <nav className="border-b border-slate-800 bg-slate-900 px-6 pt-4 flex flex-col gap-4 sticky top-0 z-50 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+              <Database className="text-purple-500 w-8 h-8" />
+              <h1 className="text-xl font-black text-white tracking-wide uppercase">GraphRAG Agent Hub</h1>
+          </div>
+          <div className="hidden md:flex items-center gap-4 text-xs font-mono text-slate-500">
+             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> Vertex AI Active</span>
+             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Multi-Modal Route</span>
+          </div>
+        </div>
+        
+        <div className="flex gap-1 overflow-x-auto no-scrollbar">
+          <TabButton id="chat" label="Chat Interface" icon={MessageSquare} />
+          <TabButton id="arch" label="System Architecture" icon={Layout} />
+          <TabButton id="readme" label="Documentation (README)" icon={FileText} />
+        </div>
+      </nav>
 
-                      {msg.meta && (
-                          <div className="mt-3 pt-3 border-t border-white/20 text-xs font-mono whitespace-pre-wrap opacity-60 break-words">
-                             [Query Generated]<br/>
-                             {msg.meta.query_generated.trim()}
-                          </div>
-                      )}
-                   </div>
-                </div>
-            ))}
-            {isThinking && (
-                 <div className="flex items-start">
-                   <div className="bg-slate-800 border-slate-700 text-white p-4 rounded-2xl rounded-bl-none flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-                   </div>
-                </div>
-            )}
-            <div ref={endOfMessagesRef} />
-         </div>
+      <main className="flex-1 flex flex-col p-4 md:p-6 max-w-7xl mx-auto w-full overflow-hidden">
+        {activeTab === 'chat' && (
+          <div className="flex-1 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-0">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 bg-slate-900/50 rounded-2xl border border-slate-800 p-6 shadow-inner">
+                {messages.map((msg, i) => (
+                    <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`max-w-[85%] p-4 rounded-2xl border ${msg.role === 'user' ? 'bg-slate-800 border-slate-700 text-white rounded-br-none' : (msg.activeNode ? getColorClass(msg.activeNode) + ' rounded-bl-none' : 'bg-slate-800 border-slate-700 text-white rounded-bl-none')}`}>
+                          <p className="text-[15px] leading-relaxed">{msg.content}</p>
+                          
+                          {msg.meta && msg.meta.results && msg.meta.results.length > 0 && (
+                              <div className="mt-3 p-3 bg-black/30 rounded-lg text-sm">
+                                <strong className="block mb-2 text-white/90 border-b border-white/20 pb-1">Data Returned:</strong>
+                                <ul className="space-y-1">
+                                  {msg.meta.results.map((r: any, idx: number) => (
+                                    <li key={idx} className="list-disc ml-4 opacity-90 font-mono text-[11px]">
+                                      {JSON.stringify(r).replace(/"/g, '').replace(/\{|\}/g, '')}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                          )}
 
-         <div className="flex flex-col gap-2 border-t border-slate-800 pt-4">
-             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Example Queries</span>
-             <div className="flex flex-wrap gap-2">
-                {examples.map((ex, i) => (
-                   <button key={i} onClick={() => runQuery(ex.text)} className="flex items-center gap-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm hover:bg-slate-800 transition-colors text-left">
-                       {ex.icon} <span>{ex.text}</span>
-                   </button>
+                          {msg.meta && (
+                              <div className="mt-3 pt-3 border-t border-white/20 text-xs font-mono whitespace-pre-wrap opacity-60 break-words">
+                                [Query Generated]<br/>
+                                {msg.meta.query_generated.trim()}
+                              </div>
+                          )}
+                      </div>
+                    </div>
                 ))}
-             </div>
-         </div>
+                {isThinking && (
+                    <div className="flex items-start">
+                      <div className="bg-slate-800 border-slate-700 text-white p-4 rounded-2xl rounded-bl-none flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                )}
+                <div ref={endOfMessagesRef} />
+            </div>
 
-         <div className="flex items-center gap-2 mt-2">
-            <input 
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask the GraphRAG Orchestrator..."
-              className="flex-1 bg-slate-950 border border-slate-800 p-4 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-white placeholder-slate-500"
-            />
-            <button onClick={handleSend} className="bg-purple-600 hover:bg-purple-500 text-white p-4 rounded-xl transition-all hover:scale-105 shadow-lg shadow-purple-500/20">
-               <Send className="w-5 h-5" />
-            </button>
-         </div>
-      </div>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Example Queries</span>
+                    <div className="flex flex-wrap gap-2">
+                        {examples.map((ex, i) => (
+                          <button key={i} onClick={() => runQuery(ex.text)} className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm hover:bg-slate-800 transition-colors text-left text-slate-300">
+                              {ex.icon} <span>{ex.text}</span>
+                          </button>
+                        ))}
+                    </div>
+                </div>
 
-      <div className="w-[55%] flex flex-col items-center justify-start border border-slate-800 bg-slate-900 rounded-2xl p-8 shadow-2xl relative overflow-y-auto">
-          <div className="w-full mb-8">
-             <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-3 drop-shadow-md">
-               <ArrowRight className="text-purple-500" /> System Architecture
-             </h2>
-             <p className="text-slate-300 mt-2 text-sm max-w-2xl drop-shadow-md font-medium">
-                A containerized FastAPI orchestrator deployed on <span className="text-blue-400 font-bold">Cloud Run</span>. It leverages Vertex AI to process natural language intent and dynamically route execution to specialized datastores.
-             </p>
+                <div className="flex items-center gap-2">
+                    <input 
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Ask the GraphRAG Orchestrator..."
+                      className="flex-1 bg-slate-900 border border-slate-800 p-4 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-white placeholder-slate-500 shadow-xl"
+                    />
+                    <button onClick={handleSend} className="bg-purple-600 hover:bg-purple-500 text-white p-4 rounded-xl transition-all hover:scale-105 shadow-lg shadow-purple-500/20">
+                      <Send className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
           </div>
-          
-          <div className="w-full flex justify-center mb-12">
-              <ArchitectureDiagram activeNode={activeNode} isThinking={isThinking} />
-          </div>
+        )}
 
-          <div className="w-full grid grid-cols-2 gap-6 mt-4">
-              <div className="bg-slate-950/50 p-5 rounded-xl border border-slate-800">
-                  <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" /> Graph Embeddings
-                  </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                      Used for <strong>Semantic Search</strong>. Vertex AI (text-embedding-004) converts NL into vectors. The DB uses <code>ML.DISTANCE</code> or <code>VECTOR_SEARCH</code> to find nodes with high conceptual similarity.
+        {activeTab === 'arch' && (
+          <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-y-auto pr-2">
+            <div className="w-full flex flex-col lg:flex-row gap-8 items-start">
+              <div className="flex-1 border border-slate-800 bg-slate-900 rounded-2xl p-8 shadow-2xl overflow-hidden min-h-[500px] flex flex-col items-center w-full">
+                <div className="w-full mb-8">
+                  <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-3 drop-shadow-md">
+                    <ArrowRight className="text-purple-500" /> Architecture Blueprint
+                  </h2>
+                  <p className="text-slate-400 mt-2 text-sm max-w-2xl drop-shadow-md font-medium leading-relaxed">
+                      A containerized FastAPI orchestrator deployed on <span className="text-blue-400 font-bold underline decoration-blue-500/30">Cloud Run</span>. It leverages Vertex AI to process natural language intent and dynamically route execution to specialized datastores.
                   </p>
+                </div>
+                
+                <div className="flex-1 w-full flex justify-center overflow-x-auto no-scrollbar">
+                    <ArchitectureDiagram activeNode={activeNode} isThinking={isThinking} />
+                </div>
               </div>
-              <div className="bg-slate-950/50 p-5 rounded-xl border border-slate-800">
-                  <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Database className="w-4 h-4" /> Graph Traversal
-                  </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                      Used for <strong>Structural Logic</strong>. Once a node is found, Graph Query Languages (GQL/Cypher) traverse relationships to find hidden patterns, multi-hop connections, and network clusters.
-                  </p>
-              </div>
-          </div>
 
-          <div className="w-full mt-8">
-              <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">Technology & Pattern Matrix</h3>
-              <div className="w-full overflow-hidden rounded-xl border border-slate-800">
-                  <table className="w-full text-left text-xs border-collapse">
-                      <thead className="bg-slate-800 text-slate-300 uppercase font-bold">
-                          <tr>
-                              <th className="p-3">Pattern</th>
-                              <th className="p-3">Database</th>
-                              <th className="p-3">Language</th>
-                              <th className="p-3">Vector Integration</th>
-                          </tr>
-                      </thead>
-                      <tbody className="bg-slate-950/30 text-slate-400">
-                          <tr className="border-t border-slate-800">
-                              <td className="p-3 font-bold text-blue-400">E-Commerce</td>
-                              <td className="p-3 text-slate-200">Cloud Spanner</td>
-                              <td className="p-3 font-mono">GQL</td>
-                              <td className="p-3">ML.DISTANCE</td>
-                          </tr>
-                          <tr className="border-t border-slate-800">
-                              <td className="p-3 font-bold text-green-400">FSI & Risk</td>
-                              <td className="p-3 text-slate-200">BigQuery</td>
-                              <td className="p-3 font-mono">SQL + Graph</td>
-                              <td className="p-3">VECTOR_SEARCH</td>
-                          </tr>
-                          <tr className="border-t border-slate-800">
-                              <td className="p-3 font-bold text-orange-400">Marketing</td>
-                              <td className="p-3 text-slate-200">Neo4j</td>
-                              <td className="p-3 font-mono">Cypher</td>
-                              <td className="p-3">Vector Index</td>
-                          </tr>
-                      </tbody>
-                  </table>
+              <div className="w-full lg:w-80 flex flex-col gap-6">
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4" /> Graph Embeddings
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                        Used for <strong>Semantic Search</strong>. Vertex AI (text-embedding-004) converts NL into vectors. The DB uses <code>ML.DISTANCE</code> or <code>VECTOR_SEARCH</code> to find nodes with high conceptual similarity.
+                    </p>
+                </div>
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Database className="w-4 h-4" /> Graph Traversal
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                        Used for <strong>Structural Logic</strong>. Once a node is found, Graph Query Languages (GQL/Cypher) traverse relationships to find hidden patterns.
+                    </p>
+                </div>
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Info className="w-4 h-4" /> Quick Links
+                    </h3>
+                    <ul className="text-[11px] space-y-2 text-slate-400">
+                      <li>
+                        <a href="https://console.cloud.google.com/spanner/instances" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 flex items-center gap-1 transition-colors">
+                          <ExternalLink className="w-3 h-3" /> Cloud Spanner Console
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://console.cloud.google.com/bigquery" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1 transition-colors">
+                          <ExternalLink className="w-3 h-3" /> BigQuery Console
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://neo4j.com/product/neo4j-graph-database/" target="_blank" rel="noopener noreferrer" className="hover:text-orange-400 flex items-center gap-1 transition-colors">
+                          <ExternalLink className="w-3 h-3" /> Neo4j Website
+                        </a>
+                      </li>
+                    </ul>
+                </div>
               </div>
+            </div>
+
+            <div className="w-full">
+                <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <Layout className="w-4 h-4 text-purple-500" /> Technology & Pattern Matrix
+                </h3>
+                <div className="w-full overflow-hidden rounded-xl border border-slate-800 shadow-2xl overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+                        <thead className="bg-slate-800 text-slate-300 uppercase font-bold">
+                            <tr>
+                                <th className="p-4 border-b border-slate-700">Domain</th>
+                                <th className="p-4 border-b border-slate-700">Database</th>
+                                <th className="p-4 border-b border-slate-700">Query Language</th>
+                                <th className="p-4 border-b border-slate-700">Vector Integration</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-slate-900/50 text-slate-400">
+                            <tr className="border-t border-slate-800 hover:bg-slate-800/30 transition-colors">
+                                <td className="p-4 font-bold text-blue-400">E-Commerce</td>
+                                <td className="p-4 text-slate-200">Cloud Spanner</td>
+                                <td className="p-4 font-mono">GQL</td>
+                                <td className="p-4">ML.DISTANCE</td>
+                            </tr>
+                            <tr className="border-t border-slate-800 hover:bg-slate-800/30 transition-colors">
+                                <td className="p-4 font-bold text-green-400">FSI & Risk</td>
+                                <td className="p-4 text-slate-200">BigQuery</td>
+                                <td className="p-4 font-mono">SQL + Graph</td>
+                                <td className="p-4">VECTOR_SEARCH</td>
+                            </tr>
+                            <tr className="border-t border-slate-800 hover:bg-slate-800/30 transition-colors">
+                                <td className="p-4 font-bold text-orange-400">Marketing</td>
+                                <td className="p-4 text-slate-200">Neo4j</td>
+                                <td className="p-4 font-mono">Cypher</td>
+                                <td className="p-4">Vector Index</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
           </div>
-      </div>
+        )}
+
+        {activeTab === 'readme' && (
+          <div className="flex-1 border border-slate-800 bg-slate-900 rounded-2xl p-6 md:p-10 shadow-2xl overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-6 mb-8">
+              <FileText className="text-purple-500 w-8 h-8" />
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Project Documentation</h2>
+            </div>
+            <div className="max-w-none">
+               <pre className="whitespace-pre-wrap font-sans text-slate-300 text-sm leading-relaxed bg-slate-950 p-6 md:p-8 rounded-xl border border-slate-800 shadow-inner overflow-x-auto">
+                 {readme}
+               </pre>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

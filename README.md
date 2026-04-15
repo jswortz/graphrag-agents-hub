@@ -1,55 +1,68 @@
-# GraphRAG Multi-Agent Hub
+# 🤖 GraphRAG Multi-Agent Hub
 
-A unified, multi-agent architecture that routes natural language queries to specialized backend graph databases (Spanner, BigQuery, and Neo4j) to execute GraphRAG pipelines natively.
+A sophisticated, multi-agent architecture that routes natural language (NL) queries to specialized backend graph databases (Cloud Spanner, BigQuery, and Neo4j) to execute **GraphRAG** pipelines natively.
 
 ## 🚀 Overview
 
-The goal of this project is to spin up subagents that demonstrate GraphRAG capability via the `NL Query -> Graph Embedding -> NQL Query` execution loop, all seamlessly managed by a central Vertex AI Orchestrator. 
+The **GraphRAG Multi-Agent Hub** is designed to demonstrate advanced retrieval patterns using the `NL Query -> Graph Embedding -> NQL Query` execution loop. It seamlessly orchestrates multiple subagents, each optimized for a specific domain and database technology, all managed by a central **Vertex AI Orchestrator**.
 
-This repository encapsulates building a modern GraphRAG application leveraging three distinct, robust database architectures under one unified React (Vite) + FastAPI frontend layer:
+### Key Features
+- **Multi-Agent Orchestration:** Intelligently routes queries to the most relevant domain expert agent.
+- **Tabbed Interface:** A modern UI with dedicated tabs for **Chat**, **Architecture**, and **Project Documentation**.
+- **Interactive Architecture:** Dynamic visualization of the system architecture that highlights active data paths during query execution.
+- **Unified GraphRAG:** Combines semantic vector search with structural graph traversals.
 
-### 1. Cloud Spanner GraphRAG
-- **Use Case:** Large Product Ontologies
-- **Functionality:** High-availability HTAP querying using Spanner Graph. Demonstrates Spanner Property Graph execution combined with embeddings.
-- **Reference Architecture:** [Gen AI with Spanner Graph](https://docs.cloud.google.com/architecture/gen-ai-graphrag-spanner)
-- **Internal Resources:** [go/spanner-graph](http://go/spanner-graph) | [go/spanner-graph-codelab](http://go/spanner-graph-codelab) | [Multimodal Graph RAG Agent Codelab](https://codelabs.developers.google.com/codelabs/survivor-network/instructions)
+## 🧠 GraphRAG Methodology: Embeddings vs. Traversal
 
-### 2. BigQuery Native Graph + Vector Search
-- **Use Case:** Customer & Risk Ontologies (e.g., Money Laundering / Account Networks)
-- **Functionality:** Built entirely within BigQuery utilizing `CREATE PROPERTY GRAPH`. By merging this natively with `AI.EMBED` and vector distance functions, users can run zero-ETL Graph RAG pipelines directly over massive data warehouses synchronized via Vertex AI and LangChain.
-- **Internal Demo:** [go/demos/demo/1691](http://go/demos/demo/1691)
+This project implements a two-stage retrieval strategy to maximize relevance and accuracy:
 
-### 3. Neo4j + Vertex AI ADK
-- **Use Case:** Brand, Campaign, and Influencer Ontologies
-- **Functionality:** Through the Agent Development Kit (ADK), this path leverages established patterns for building undirected / directed graph cluster mappings leveraging Vertex AI, Neo4j, and the Model Context Protocol (MCP).
-- **Codelab:** [Vertex AI & Neo4j ADK Codelab](https://codelabs.developers.google.com/neo4j-adk-graphrag-agents)
+1.  **Stage 1: Graph Embeddings (Semantic Search)**
+    - **Purpose:** Find the entry point or "seed" nodes based on conceptual meaning.
+    - **Mechanism:** The NL query is converted into a vector via **Vertex AI (text-embedding-004)**. The database uses native vector search (e.g., `ML.DISTANCE` in Spanner or `VECTOR_SEARCH` in BigQuery) to identify nodes with high semantic similarity.
+2.  **Stage 2: Graph Traversal (Structural Logic)**
+    - **Purpose:** Explore relationships and discover hidden connections from the seed nodes.
+    - **Mechanism:** Using Graph Query Languages (GQL for Spanner, SQL+Graph for BigQuery, Cypher for Neo4j), the agents traverse multi-hop relationships to identify clusters, risk networks, or product hierarchies.
+
+## 📊 Technology & Pattern Matrix
+
+| Pattern | Database | Color Code | Language | Embedding Integration |
+| :--- | :--- | :--- | :--- | :--- |
+| **E-Commerce** | <font color="#3b82f6">Cloud Spanner</font> | **Blue** | GQL (ISO standard) | `ML.DISTANCE` |
+| **FSI & Risk** | <font color="#22c55e">BigQuery</font> | **Green** | SQL + Property Graph | `VECTOR_SEARCH` |
+| **Marketing** | <font color="#f97316">Neo4j</font> | **Orange** | Cypher | Neo4j Vector Index |
 
 ## 🏗️ Architecture Stack
 
-- **Frontend:** React + TypeScript + Vite + TailwindCSS + Framer Motion
-- **Backend:** FastAPI (Python 3.11) + LangChain + Vertex AI Orchestrator
-- **Databases:** Google Cloud Spanner, Google Cloud BigQuery, Neo4j
-- **Deployment:** Serverless deployment via Google Cloud Run
+- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS + Framer Motion.
+- **Backend:** FastAPI (Python 3.13+) + LangChain + Vertex AI Orchestrator.
+- **Databases:** Google Cloud Spanner (Graph), BigQuery (Property Graph), Neo4j.
+- **Orchestration:** Custom routing logic in `agent_orchestrator.py` leveraging Vertex AI.
 
 ## 💻 Running Locally
 
-1. Install dependencies:
+1. **Install Dependencies:**
    ```bash
-   pip install -r requirements.txt
+   uv sync
    cd frontend && npm install && npm run build
    ```
-2. Start the FastAPI server (which mounts the frontend):
+2. **Start the FastAPI Server:**
    ```bash
    python -m uvicorn server:app --reload --port 8080
    ```
+3. **Access the Hub:** Open `http://localhost:8080` in your browser.
 
 ## ☁️ Deployment
 
-Automatic one-click deployment to Cloud Run is available via the bash scripts:
+The project is optimized for deployment on **Google Cloud Run**.
+
 ```bash
-# Provision instances and tables
+# Provision all databases and data
 ./provision_all_data.sh
 
-# Deploy to Cloud Run
+# Deploy the orchestrator hub
 gcloud run deploy graphrag-agents-hub --source .
 ```
+
+## 📝 Documentation
+- [AGENTS.md](AGENTS.md) - Deep dive into specialized agent roles.
+- [GEMINI.md](GEMINI.md) - Technical guide for AI agents working in this repo.
