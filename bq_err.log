@@ -1,0 +1,70 @@
+Traceback (most recent call last):
+  File "/usr/local/google/home/jwortz/graphrag_agents/patch_bq.py", line 65, in <module>
+    provision_bigquery()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/google/home/jwortz/graphrag_agents/patch_bq.py", line 61, in provision_bigquery
+    client.query(pg_query).result()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/bigquery/job/query.py", line 1797, in result
+    while not is_job_done():
+              ~~~~~~~~~~~^^
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_base.py", line 216, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 147, in retry_target
+    result = target()
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/bigquery/job/query.py", line 1766, in is_job_done
+    self._reload_query_results(retry=retry, **reload_query_results_kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/bigquery/job/query.py", line 1558, in _reload_query_results
+    self._query_results = self._client._get_query_results(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.job_id,
+        ^^^^^^^^^^^^
+    ...<6 lines>...
+        start_index=start_index,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/bigquery/client.py", line 2113, in _get_query_results
+    resource = self._call_api(
+        retry,
+    ...<5 lines>...
+        timeout=timeout,
+    )
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/bigquery/client.py", line 861, in _call_api
+    return call()
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_base.py", line 216, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 147, in retry_target
+    result = target()
+  File "/usr/local/google/home/jwortz/graphrag_agents/.venv/lib/python3.13/site-packages/google/cloud/_http/__init__.py", line 494, in api_request
+    raise exceptions.from_http_response(response)
+google.api_core.exceptions.BadRequest: 400 GET https://bigquery.mtls.googleapis.com/bigquery/v2/projects/wortz-project-352116/queries/0c702ea2-202e-49cf-9ca4-a94f2edb308d?maxResults=0&location=US&prettyPrint=false: The node table 'wortz-project-352116.graphrag_customers.Customers' does not have primary key defined; graph element table keys must be explicitly defined at [4:7]
+
+Location: US
+Job ID: 0c702ea2-202e-49cf-9ca4-a94f2edb308d
+ [{'@type': 'type.googleapis.com/google.rpc.DebugInfo', 'detail': '[INVALID_INPUT] message=QUERY_ERROR: [The node table \'wortz-project-352116.graphrag_customers.Customers\' does not have primary key defined; graph element table keys must be explicitly defined at [4:7]] debug=code: \t BAD_QUERY\ndescription: "The node table \\\'wortz-project-352116.graphrag_customers.Customers\\\' does not have primary key defined; graph element table keys must be explicitly defined"\ncause: USER_ERROR\naddress: "http://ibav9.prod.google.com:4901/task?handle=logs.441.serving.mixer.0.cloud-dataengine.1744229819290"\nstatus_proto {\n  code: 3\n  space: "generic"\n  message: "The node table \\\'wortz-project-352116.graphrag_customers.Customers\\\' does not have primary key defined; graph element table keys must be explicitly defined"\n}\nerror_details {\n  argument_error {\n    analyzer_error {\n      line: 4\n      column: 7\n    }\n  }\n}\n errorProto=code: "QUERY_ERROR"\nargument: "The node table \\\'wortz-project-352116.graphrag_customers.Customers\\\' does not have primary key defined; graph element table keys must be explicitly defined at [4:7]"\nlocation_type: OTHER\nlocation: "query"\n\n\tat com.google.cloud.helix.common.Exceptions.fromProto(Exceptions.java:1983)\n\tat com.google.cloud.helix.common.dremel.QueryExecutorImpl.mapDremelErrorsTohelixException(QueryExecutorImpl.java:1235)\n\tat com.google.cloud.helix.common.dremel.QueryExecutorImpl$ConfiguredQueryMigration$StreamHandler.onMessage(QueryExecutorImpl.java:810)\n\tat com.google.cloud.helix.common.dremel.QueryExecutorImpl$ConfiguredQueryMigration$StreamHandler.onMessage(QueryExecutorImpl.java:736)\n\tat com.google.net.rpc3.stream.RpcMessageCallback$ForwardingRpcMessageCallback.onMessage(RpcMessageCallback.java:128)\n\tat com.google.net.rpc3.impl.RpcStreamInternalContext.processMessageUnlocked(RpcStreamInternalContext.java:1861)\n\tat com.google.net.rpc3.impl.RpcStreamInternalContext.invokeCallbacksInternalUnlocked(RpcStreamInternalContext.java:2916)\n\tat com.google.net.rpc3.impl.RpcStreamInternalContext.invokeCallbacksUnlocked(RpcStreamInternalContext.java:2842)\n\tat com.google.net.eventmanager.AbstractFutureTask$Sync.innerRun(AbstractFutureTask.java:259)\n\tat com.google.net.eventmanager.AbstractFutureTask.run(AbstractFutureTask.java:120)\n\tat com.google.net.eventmanager.EventManagerImpl.runTaskTraced(EventManagerImpl.java:903)\n\tat com.google.net.eventmanager.EventManagerImpl.runTask(EventManagerImpl.java:895)\n\tat com.google.net.eventmanager.EventManagerImpl.internalRunWorkerLoop(EventManagerImpl.java:1322)\n\tat com.google.net.eventmanager.EventManagerImpl.runWorkerLoop(EventManagerImpl.java:1213)\n\tat com.google.net.eventmanager.WorkerThreadInfo.runWorkerLoop(WorkerThreadInfo.java:153)\n\tat com.google.net.eventmanager.EventManagerImpl$WorkerThread.run(EventManagerImpl.java:2006)\n'}]

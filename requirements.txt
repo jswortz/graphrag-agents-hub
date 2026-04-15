@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+google-cloud-spanner
+google-cloud-bigquery
+neo4j
+langchain
+pydantic
+numpy
