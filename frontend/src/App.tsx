@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import { Send, Database, Sparkles, User, Box, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 function App() {
   const [messages, setMessages] = useState<any[]>([{ role: "agent", content: "Welcome to the GraphRAG Multi-Agent Hub. Try a query below!", activeNode: null, meta: null }]);
@@ -147,18 +146,73 @@ function App() {
          </div>
       </div>
 
-      <div className="w-[55%] flex flex-col items-center justify-center border border-slate-800 bg-slate-900 rounded-2xl p-8 shadow-2xl relative">
-          <div className="absolute top-8 left-8 z-10">
+      <div className="w-[55%] flex flex-col items-center justify-start border border-slate-800 bg-slate-900 rounded-2xl p-8 shadow-2xl relative overflow-y-auto">
+          <div className="w-full mb-8">
              <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-3 drop-shadow-md">
                <ArrowRight className="text-purple-500" /> System Architecture
              </h2>
-             <p className="text-slate-300 mt-2 text-sm max-w-md drop-shadow-md font-medium">
-                The Vertex AI Orchestrator receives the natural language intent and dynamically routes execution to the specialized datastore. 
+             <p className="text-slate-300 mt-2 text-sm max-w-2xl drop-shadow-md font-medium">
+                A containerized FastAPI orchestrator deployed on <span className="text-blue-400 font-bold">Cloud Run</span>. It leverages Vertex AI to process natural language intent and dynamically route execution to specialized datastores.
              </p>
           </div>
           
-          <div className="mt-16 w-full flex justify-center">
+          <div className="w-full flex justify-center mb-12">
               <ArchitectureDiagram activeNode={activeNode} isThinking={isThinking} />
+          </div>
+
+          <div className="w-full grid grid-cols-2 gap-6 mt-4">
+              <div className="bg-slate-950/50 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" /> Graph Embeddings
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                      Used for <strong>Semantic Search</strong>. Vertex AI (text-embedding-004) converts NL into vectors. The DB uses <code>ML.DISTANCE</code> or <code>VECTOR_SEARCH</code> to find nodes with high conceptual similarity.
+                  </p>
+              </div>
+              <div className="bg-slate-950/50 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Database className="w-4 h-4" /> Graph Traversal
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                      Used for <strong>Structural Logic</strong>. Once a node is found, Graph Query Languages (GQL/Cypher) traverse relationships to find hidden patterns, multi-hop connections, and network clusters.
+                  </p>
+              </div>
+          </div>
+
+          <div className="w-full mt-8">
+              <h3 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">Technology & Pattern Matrix</h3>
+              <div className="w-full overflow-hidden rounded-xl border border-slate-800">
+                  <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-800 text-slate-300 uppercase font-bold">
+                          <tr>
+                              <th className="p-3">Pattern</th>
+                              <th className="p-3">Database</th>
+                              <th className="p-3">Language</th>
+                              <th className="p-3">Vector Integration</th>
+                          </tr>
+                      </thead>
+                      <tbody className="bg-slate-950/30 text-slate-400">
+                          <tr className="border-t border-slate-800">
+                              <td className="p-3 font-bold text-blue-400">E-Commerce</td>
+                              <td className="p-3 text-slate-200">Cloud Spanner</td>
+                              <td className="p-3 font-mono">GQL</td>
+                              <td className="p-3">ML.DISTANCE</td>
+                          </tr>
+                          <tr className="border-t border-slate-800">
+                              <td className="p-3 font-bold text-green-400">FSI & Risk</td>
+                              <td className="p-3 text-slate-200">BigQuery</td>
+                              <td className="p-3 font-mono">SQL + Graph</td>
+                              <td className="p-3">VECTOR_SEARCH</td>
+                          </tr>
+                          <tr className="border-t border-slate-800">
+                              <td className="p-3 font-bold text-orange-400">Marketing</td>
+                              <td className="p-3 text-slate-200">Neo4j</td>
+                              <td className="p-3 font-mono">Cypher</td>
+                              <td className="p-3">Vector Index</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
           </div>
       </div>
     </div>

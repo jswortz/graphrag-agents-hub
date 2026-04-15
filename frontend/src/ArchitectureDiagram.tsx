@@ -53,7 +53,7 @@ const Connection = ({ from, to, active, color }: any) => {
 
 export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
   const nodes = {
-    vertex: { x: 230, y: 30, title: "Vertex AI\nOrchestrator", color: "bg-purple-600", pathColor: "bg-purple-500" },
+    vertex: { x: 230, y: 30, title: "Cloud Run +\nVertex AI", color: "bg-purple-600", pathColor: "bg-purple-500" },
     spanner: { x: 30, y: 220, title: "Spanner Graph\n(Products)", color: "bg-blue-500", pathColor: "bg-blue-500" },
     neo4j: { x: 230, y: 280, title: "Neo4j\n(Brands)", color: "bg-orange-500", pathColor: "bg-orange-500" },
     bigquery: { x: 430, y: 220, title: "BigQuery Property Graph\n(Customers)", color: "bg-green-500", pathColor: "bg-green-500" }
@@ -71,7 +71,7 @@ export default function ArchitectureDiagram({ activeNode, isThinking }: any) {
     if (activeNode === 'neo4j') {
       return `/* Neo4j Cypher Pattern */\nMATCH (b:Brand)-[:RUNS]->(c:Campaign)-[:FEATURES]->(i:Influencer)\nWHERE b.name = $brand\nRETURN c.name, i.name\n\n// Backend: neo4j python driver`;
     }
-    return `/* Vertex AI Langchain Agent */\n1. Receive NL Intent\n2. Extract Entity & Intent\n3. Determine optimal Graph Database Route\n4. Synthesize underlying Graph Query Language (GQL / Cypher / SQL)\n5. Return natural response generated from Graph tuples`;
+    return `/* Cloud Run + Vertex AI Agent */\n1. Receive NL Intent via Cloud Run API\n2. Extract Entity & Intent via Vertex\n3. Determine optimal Graph Database Route\n4. Synthesize underlying Graph Query Language (GQL / Cypher / SQL)\n5. Return natural response generated from Graph tuples`;
   };
 
   const getStyleClass = () => {
