@@ -129,7 +129,11 @@ class LiveNeo4jAgent:
             with driver.session() as session:
                 rs = session.run(graph_query)
                 for record in rs:
-                    results.append({"influencer": record["influencer"], "brand": record["brand"], "score": record["score"]})
+                    results.append({
+                        "influencer": record["influencer"], 
+                        "brand": record["brand"], 
+                        "score": float(record["score"])
+                    })
             driver.close()
             if not results:
                 raise Exception("Empty")
