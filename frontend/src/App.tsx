@@ -281,22 +281,32 @@ function App() {
                   </div>
                   <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl">
                       <h3 className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                          <Info className="w-4 h-4" /> Quick Links
+                          <Info className="w-4 h-4" /> Product Documentation
                       </h3>
                       <ul className="text-[11px] space-y-2 text-slate-400">
                         <li>
-                          <a href="https://console.cloud.google.com/spanner/instances" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 flex items-center gap-1 transition-colors">
-                            <ExternalLink className="w-3 h-3" /> Cloud Spanner Console
+                          <a href="https://cloud.google.com/spanner/docs/graph" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 flex items-center gap-1 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> Spanner Graph Docs
                           </a>
                         </li>
                         <li>
-                          <a href="https://console.cloud.google.com/bigquery" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1 transition-colors">
-                            <ExternalLink className="w-3 h-3" /> BigQuery Console
+                          <a href="https://cloud.google.com/bigquery/docs/property-graph-overview" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 flex items-center gap-1 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> BigQuery Graph Docs
                           </a>
                         </li>
                         <li>
-                          <a href="https://neo4j.com/product/neo4j-graph-database/" target="_blank" rel="noopener noreferrer" className="hover:text-orange-400 flex items-center gap-1 transition-colors">
-                            <ExternalLink className="w-3 h-3" /> Neo4j Website
+                          <a href="https://neo4j.com/docs/cypher-manual/current/" target="_blank" rel="noopener noreferrer" className="hover:text-orange-400 flex items-center gap-1 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> Neo4j Cypher Docs
+                          </a>
+                        </li>
+                        <li>
+                          <a href="https://cloud.google.com/vertex-ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 flex items-center gap-1 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> Vertex AI Docs
+                          </a>
+                        </li>
+                        <li>
+                          <a href="https://cloud.google.com/blog/products/databases/using-spanner-graph-with-langchain-for-graphrag" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 flex items-center gap-1 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> Google Cloud GraphRAG Blog
                           </a>
                         </li>
                       </ul>

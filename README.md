@@ -54,3 +54,11 @@ uv sync && cd frontend && npm install && npm run build && cd .. && ./deploy.sh
 ## ☁️ Deployment
 
 Optimized for **Google Cloud Run**. The `deploy.sh` script handles automated provisioning, coverage verification, and containerized deployment.
+
+## 📚 Product Documentation References
+
+* [Spanner Graph Documentation](https://cloud.google.com/spanner/docs/graph)
+* [BigQuery Property Graph Overview](https://cloud.google.com/bigquery/docs/property-graph-overview)
+* [Neo4j Cypher Manual](https://neo4j.com/docs/cypher-manual/current/)
+* [Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)
+* [Using Spanner Graph with LangChain for GraphRAG](https://cloud.google.com/blog/products/databases/using-spanner-graph-with-langchain-for-graphrag)
