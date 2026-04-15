@@ -16,6 +16,7 @@ dependencies = [
     "pydantic>=2.13.0",
     "pytest>=9.0.3",
     "uvicorn>=0.44.0",
+    "google-adk[a2a]",
 ]
 
 [[tool.uv.index]]
